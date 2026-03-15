@@ -12,13 +12,13 @@ This report documents the successful deployment of all local documents and asset
 The following repositories have been successfully pushed to GitHub:
 
 1. **webwaka-platform-docs**
-   - **URL:** https://github.com/WebWakaHub/webwaka-platform-docs
+   - **URL:** https://github.com/WebWakaDOS/webwaka-platform-docs
    - **Branch:** `develop`
    - **Contents:** All core documents (Blueprint, Roadmap, Plans, QA Reports, Bootstrap Prompt, Setup Guides)
    - **Status:** ✅ Pushed successfully
 
 2. **webwaka-platform-status**
-   - **URL:** https://github.com/WebWakaHub/webwaka-platform-status
+   - **URL:** https://github.com/WebWakaDOS/webwaka-platform-status
    - **Branch:** `develop`
    - **Contents:** `queue.json`, `MULTI-ACCOUNT-EXECUTION-GUIDE.md`, `README.md`
    - **Status:** ✅ Pushed successfully
@@ -29,9 +29,9 @@ The following repositories have been successfully pushed to GitHub:
 
 All production links have been verified and are returning HTTP 200 OK:
 
-- **Docs Repo:** ✅ `https://github.com/WebWakaHub/webwaka-platform-docs` (HTTP 200)
-- **Status Repo:** ✅ `https://github.com/WebWakaHub/webwaka-platform-status` (HTTP 200)
-- **Queue JSON (Raw):** ✅ `https://raw.githubusercontent.com/WebWakaHub/webwaka-platform-status/develop/queue.json` (HTTP 200)
+- **Docs Repo:** ✅ `https://github.com/WebWakaDOS/webwaka-platform-docs` (HTTP 200)
+- **Status Repo:** ✅ `https://github.com/WebWakaDOS/webwaka-platform-status` (HTTP 200)
+- **Queue JSON (Raw):** ✅ `https://raw.githubusercontent.com/WebWakaDOS/webwaka-platform-status/develop/queue.json` (HTTP 200)
 
 ---
 
@@ -47,13 +47,13 @@ The `WEBWAKA-MANUS-BOOTSTRAP.md` file has been updated with the correct producti
 
 **After:**
 ```markdown
-3. Clone the documentation repository: `git clone https://github.com/WebWakaHub/webwaka-platform-docs.git /tmp/webwaka-platform-docs`
-4. Clone the status repository: `git clone https://github.com/WebWakaHub/webwaka-platform-status.git /tmp/webwaka-platform-status`
+3. Clone the documentation repository: `git clone https://github.com/WebWakaDOS/webwaka-platform-docs.git /tmp/webwaka-platform-docs`
+4. Clone the status repository: `git clone https://github.com/WebWakaDOS/webwaka-platform-status.git /tmp/webwaka-platform-status`
 
 ### REPOSITORY LINKS:
-- **Docs Repo:** https://github.com/WebWakaHub/webwaka-platform-docs
-- **Status Repo:** https://github.com/WebWakaHub/webwaka-platform-status
-- **Queue:** https://github.com/WebWakaHub/webwaka-platform-status/blob/develop/queue.json
+- **Docs Repo:** https://github.com/WebWakaDOS/webwaka-platform-docs
+- **Status Repo:** https://github.com/WebWakaDOS/webwaka-platform-status
+- **Queue:** https://github.com/WebWakaDOS/webwaka-platform-status/blob/develop/queue.json
 ```
 
 ---
