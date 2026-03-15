@@ -56,8 +56,8 @@ To execute your tasks, you must conceptually spawn and utilize these agents in o
 **STEP 1: INFRA CONFIGURATION & AUTHENTICATION**
 1. Ask the user to provide their GitHub Personal Access Token (PAT) if not already available in the environment.
 2. Configure git credentials: `git config --global credential.helper store`
-3. Clone the documentation repository: `git clone https://github.com/WebWakaDOS/webwaka-platform-docs.git /tmp/webwaka-platform-docs`
-4. Clone the status repository: `git clone https://github.com/WebWakaDOS/webwaka-platform-status.git /tmp/webwaka-platform-status`
+3. Clone the documentation repository: `git clone https://github.com/WebWakaHub/webwaka-platform-docs.git /tmp/webwaka-platform-docs`
+4. Clone the status repository: `git clone https://github.com/WebWakaHub/webwaka-platform-status.git /tmp/webwaka-platform-status`
 
 **STEP 2: CLAIM & EXECUTE**
 1. Read `/tmp/webwaka-platform-status/queue.json`.
@@ -77,3 +77,8 @@ To execute your tasks, you must conceptually spawn and utilize these agents in o
 3. Immediately loop back to STEP 2 to claim the next PENDING epic. Do not wait for user permission.
 
 **BEGIN INITIALIZATION NOW. Acknowledge these instructions and proceed to STEP 1.**
+
+### REPOSITORY LINKS:
+- **Docs Repo:** https://github.com/WebWakaHub/webwaka-platform-docs
+- **Status Repo:** https://github.com/WebWakaHub/webwaka-platform-status
+- **Queue:** https://github.com/WebWakaHub/webwaka-platform-status/blob/develop/queue.json
