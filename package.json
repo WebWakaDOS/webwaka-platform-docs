@@ -1,0 +1,18 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "**Status:** ✅ **PRODUCTION READY**   **Last Updated:** March 15, 2026   **Factory Status:** Parallel implementation factory operational with 6 phases complete",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "marked": "^17.0.5"
+  }
+}
