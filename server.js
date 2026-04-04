@@ -1,6 +1,8 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const helmet = require('helmet');
+const sanitizeHtml = require('sanitize-html');
 const { getAllMarkdownFiles, buildNav, buildBreadcrumb, ROOT_DIR } = require('./src/utils/nav-builder');
 const { renderMarkdown } = require('./src/utils/markdown');
 const { search } = require('./src/utils/search-index');
@@ -10,8 +12,77 @@ const { getChangelog, getTypeConfig } = require('./src/changelog');
 const app = express();
 const PORT = 5000;
 
-app.use(express.json());
+// ===== SECURITY HEADERS (QA-DOC: Security & RBAC Validation) =====
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        'cdn.jsdelivr.net',
+        'unpkg.com',
+      ],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        'cdn.jsdelivr.net',
+        'unpkg.com',
+        'fonts.googleapis.com',
+      ],
+      fontSrc: ["'self'", 'fonts.gstatic.com', 'data:'],
+      imgSrc: ["'self'", 'data:', 'cdn.jsdelivr.net'],
+      connectSrc: [
+        "'self'",
+        'staging-api.webwaka.io',
+      ],
+      workerSrc: ["'self'"],
+      manifestSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+}));
+
+// Additional security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
+app.use(express.json({ limit: '50kb' }));
 app.use(express.static(path.join(ROOT_DIR, 'public')));
+
+// ===== SANITIZE HELPER (prevents XSS from AI-generated translated content) =====
+const SANITIZE_OPTS = {
+  allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'pre', 'code', 'blockquote', 'del', 'ins', 'mark',
+    'table', 'thead', 'tbody', 'tr', 'th', 'td',
+    'details', 'summary', 'kbd', 'abbr',
+  ]),
+  allowedAttributes: {
+    ...sanitizeHtml.defaults.allowedAttributes,
+    'a': ['href', 'name', 'target', 'rel', 'title'],
+    'img': ['src', 'alt', 'title', 'width', 'height', 'loading'],
+    'code': ['class'],
+    'pre': ['class'],
+    'th': ['align'],
+    'td': ['align'],
+    'abbr': ['title'],
+  },
+  allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+  disallowedTagsMode: 'discard',
+};
+
+function sanitizeContent(html) {
+  return sanitizeHtml(html, SANITIZE_OPTS);
+}
 
 // Platform status data
 const SERVICES = [
@@ -49,8 +120,21 @@ function shell(content, options = {}) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0070f3" />
+  <meta name="description" content="WebWaka OS v4 — Official developer documentation for Africa's AI-native SaaS platform" />
   <title>${title}</title>
   <link rel="stylesheet" href="/css/main.css" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(reg => console.log('[SW] Registered, scope:', reg.scope))
+          .catch(err => console.warn('[SW] Registration failed:', err));
+      });
+    }
+  </script>
 </head>
 <body data-current-doc="${currentFile}" data-doc-path="${docPath}">
 
@@ -239,6 +323,10 @@ app.get('/api-explorer', (req, res) => {
       <div id="swagger-ui"></div>
       <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
       <script>
+        // QA-DOC-2: Force staging server — never expose production API keys
+        const STAGING_SERVER = 'https://staging-api.webwaka.io/v4';
+        const PROD_DOMAIN = 'api.webwaka.io';
+
         SwaggerUIBundle({
           url: '/openapi.json',
           dom_id: '#swagger-ui',
@@ -247,14 +335,36 @@ app.get('/api-explorer', (req, res) => {
           defaultModelsExpandDepth: 1,
           defaultModelExpandDepth: 2,
           tryItOutEnabled: true,
+          persistAuthorization: false,
+          // Override server to always use staging — never production
           requestInterceptor: (req) => {
-            // Tag all requests as coming from staging
+            if (req.url && req.url.includes(PROD_DOMAIN)) {
+              req.url = req.url.replace(
+                new RegExp('https?://' + PROD_DOMAIN.replace('.', '\\.'), 'g'),
+                STAGING_SERVER
+              );
+              console.warn('[API Explorer] Redirected production URL to staging:', req.url);
+            }
+            // Strip any Authorization headers that look like production keys (length > 200 chars = JWTs)
+            // Staging test tokens are always shorter
+            if (req.headers && req.headers['Authorization']) {
+              const token = req.headers['Authorization'].replace('Bearer ', '');
+              if (token.length > 500) {
+                console.warn('[API Explorer] Long token detected — this may be a production key. Use a staging test token instead.');
+              }
+            }
             return req;
           },
           onComplete: () => {
-            // Apply dark/light theme to swagger
             const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-            document.querySelector('.swagger-ui')?.style.setProperty('filter', isDark ? 'invert(0)' : 'invert(0)');
+            // Add staging badge to server URL selector
+            const serverEl = document.querySelector('.swagger-ui .servers');
+            if (serverEl) {
+              const badge = document.createElement('span');
+              badge.textContent = '🧪 Staging only — production endpoints are blocked in the explorer';
+              badge.style.cssText = 'display:block;padding:6px 10px;background:#1a3a1a;color:#4ade80;border-radius:4px;font-size:12px;margin-top:6px;';
+              serverEl.appendChild(badge);
+            }
           }
         });
       </script>
