@@ -1,0 +1,298 @@
+name: Generate & Validate OpenAPI Specification
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'openapi.json'
+      - '.github/workflows/generate-openapi.yml'
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run weekly on Mondays at 08:00 WAT (07:00 UTC)
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      regenerate:
+        description: 'Force full regeneration from source repos'
+        required: false
+        default: 'false'
+
+jobs:
+  validate-openapi:
+    name: Validate OpenAPI Spec
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout docs repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate OpenAPI spec
+        run: |
+          npx @stoplight/spectral-cli lint openapi.json \
+            --ruleset https://unpkg.com/@stoplight/spectral-owasp-ruleset@1.x/dist/ruleset.mjs \
+            --format pretty
+        continue-on-error: false
+
+      - name: Check for required fields
+        run: |
+          node -e "
+            const spec = require('./openapi.json');
+            const required = ['openapi', 'info', 'paths', 'components'];
+            const missing = required.filter(f => !spec[f]);
+            if (missing.length) {
+              console.error('Missing required OpenAPI fields:', missing.join(', '));
+              process.exit(1);
+            }
+            const pathCount = Object.keys(spec.paths).length;
+            const schemaCount = Object.keys(spec.components.schemas).length;
+            console.log('✅ OpenAPI spec valid');
+            console.log('   Paths:', pathCount);
+            console.log('   Schemas:', schemaCount);
+            console.log('   API Version:', spec.info.version);
+          "
+
+  generate-postman:
+    name: Generate Postman Collection
+    runs-on: ubuntu-latest
+    needs: validate-openapi
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install openapi-to-postman
+        run: npm install -g openapi-to-postmanv2
+
+      - name: Generate Postman collection
+        run: |
+          openapi2postmanv2 \
+            -s openapi.json \
+            -o postman-collection.json \
+            -p \
+            -O requestParametersResolution=Example,optimizeConversion=true
+
+      - name: Upload Postman collection as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-collection
+          path: postman-collection.json
+          retention-days: 30
+
+      - name: Commit updated Postman collection
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: |
+          git config user.name "webwaka-bot[bot]"
+          git config user.email "bot@webwaka.io"
+          git add postman-collection.json
+          git diff --staged --quiet || git commit -m "chore(docs): regenerate Postman collection [automated] [Part 8.1]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  generate-from-repos:
+    name: Regenerate from Source Repos
+    runs-on: ubuntu-latest
+    if: github.event.inputs.regenerate == 'true' || github.event_name == 'schedule'
+    needs: validate-openapi
+    steps:
+      - name: Checkout docs repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.WEBWAKA_BOT_TOKEN }}
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Clone all platform repos
+        run: |
+          mkdir -p /tmp/repos
+          REPOS=(
+            "webwaka-core"
+            "webwaka-central-mgmt"
+            "webwaka-commerce"
+            "webwaka-transport"
+            "webwaka-cross-cutting"
+          )
+          for repo in "${REPOS[@]}"; do
+            echo "Cloning $repo..."
+            git clone --depth=1 \
+              https://x-access-token:${{ secrets.WEBWAKA_BOT_TOKEN }}@github.com/webwaka-os/${repo}.git \
+              /tmp/repos/${repo} || echo "Warning: Could not clone ${repo}"
+          done
+
+      - name: Generate OpenAPI specs from TypeScript interfaces
+        run: |
+          cd /tmp/repos
+          for dir in */; do
+            if [ -f "${dir}tsoa.json" ]; then
+              echo "Running tsoa for $dir..."
+              cd "${dir}"
+              npm ci --prefer-offline 2>/dev/null || true
+              npx tsoa spec --out /tmp/specs/${dir%/}-openapi.json 2>/dev/null || \
+                echo "Warning: tsoa failed for $dir, skipping"
+              cd ..
+            fi
+          done
+
+      - name: Merge all specs into openapi.json
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const specsDir = '/tmp/specs';
+
+            let merged = JSON.parse(fs.readFileSync('./openapi.json', 'utf8'));
+
+            if (fs.existsSync(specsDir)) {
+              const specs = fs.readdirSync(specsDir)
+                .filter(f => f.endsWith('.json'))
+                .map(f => JSON.parse(fs.readFileSync(path.join(specsDir, f), 'utf8')));
+
+              for (const spec of specs) {
+                if (spec.paths) Object.assign(merged.paths, spec.paths);
+                if (spec.components?.schemas) {
+                  Object.assign(merged.components.schemas, spec.components.schemas);
+                }
+              }
+            }
+
+            merged.info.version = '4.' + Date.now();
+            merged.info.description = merged.info.description +
+              '\n\n_Last generated: ' + new Date().toISOString() + '_';
+
+            fs.writeFileSync('./openapi.json', JSON.stringify(merged, null, 2));
+            console.log('Merged spec written to openapi.json');
+          "
+
+      - name: Commit merged spec
+        run: |
+          git config user.name "webwaka-bot[bot]"
+          git config user.email "bot@webwaka.io"
+          git add openapi.json
+          git diff --staged --quiet || git commit -m "chore(docs): regenerate OpenAPI spec from source repos [Part 8.1]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.WEBWAKA_BOT_TOKEN }}
+
+  translate-docs:
+    name: AI Translation Pipeline
+    runs-on: ubuntu-latest
+    needs: validate-openapi
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.WEBWAKA_BOT_TOKEN }}
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Detect changed Markdown files
+        id: changed
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD -- '*.md' | tr '\n' ',')
+          echo "files=$CHANGED" >> $GITHUB_OUTPUT
+          echo "Changed MD files: $CHANGED"
+
+      - name: Translate changed files via CORE-5
+        if: steps.changed.outputs.files != ''
+        env:
+          WEBWAKA_AI_KEY: ${{ secrets.WEBWAKA_AI_KEY }}
+        run: |
+          node -e "
+            const fs = require('fs');
+            const https = require('https');
+            const files = process.env.CHANGED_FILES
+              ? process.env.CHANGED_FILES.split(',').filter(f => f.endsWith('.md'))
+              : [];
+
+            const languages = ['fr', 'sw', 'ar'];
+
+            async function translateFile(filepath, targetLang) {
+              const content = fs.readFileSync(filepath, 'utf8');
+              const targetPath = 'translations/' + targetLang + '/' + filepath.split('/').pop();
+
+              // Call CORE-5 AI translation (WebWaka AI platform)
+              const payload = JSON.stringify({
+                prompt: 'Translate the following Markdown documentation to ' + targetLang +
+                        '. Preserve all Markdown formatting, code blocks, and links. Only translate natural language text.',
+                context: { content: content.substring(0, 4000) },
+                language: targetLang,
+                maxTokens: 4096
+              });
+
+              return new Promise((resolve) => {
+                const req = https.request({
+                  hostname: 'staging-api.webwaka.io',
+                  path: '/v4/ai/completions',
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + process.env.WEBWAKA_AI_KEY
+                  }
+                }, (res) => {
+                  let data = '';
+                  res.on('data', d => data += d);
+                  res.on('end', () => {
+                    try {
+                      const result = JSON.parse(data);
+                      const translated = result.text || content;
+                      const header = '<!-- Auto-translated by WebWaka CORE-5 AI | Language: ' + targetLang + ' | Source: ' + filepath + ' -->\n\n';
+                      fs.mkdirSync('translations/' + targetLang, { recursive: true });
+                      fs.writeFileSync(targetPath, header + translated);
+                      console.log('Translated', filepath, '->', targetPath);
+                    } catch {
+                      console.log('Translation unavailable for', filepath, '- skipping');
+                    }
+                    resolve();
+                  });
+                });
+                req.on('error', () => resolve());
+                req.write(payload);
+                req.end();
+              });
+            }
+
+            (async () => {
+              for (const lang of languages) {
+                for (const file of files) {
+                  if (!file.startsWith('translations/')) {
+                    await translateFile(file, lang);
+                  }
+                }
+              }
+            })();
+          " || echo 'Translation pipeline ran (may be partial in staging)'
+
+      - name: Commit translations
+        run: |
+          git config user.name "webwaka-bot[bot]"
+          git config user.email "bot@webwaka.io"
+          git add translations/
+          git diff --staged --quiet || git commit -m "chore(i18n): auto-translate docs via CORE-5 [Part 12.3]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.WEBWAKA_BOT_TOKEN }}
