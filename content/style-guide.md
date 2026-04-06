@@ -162,12 +162,12 @@ Table format:
 Use descriptive link text. Never use "click here" or bare URLs as link text.
 
 ```markdown
-See the [Webhooks Reference](../webhooks.md) for a full list of event types.
+See the [Webhooks Reference](webhooks.md) for a full list of event types.
 ```
 
 Not:
 ```markdown
-See the webhook docs [here](../webhooks.md).
+See the webhook docs [here](webhooks.md).
 ```
 
 Internal links use relative paths from the current file's location. Test all links with `npm run check-links` before submitting.
@@ -309,7 +309,7 @@ graph TD
 For complex diagrams that do not render well in Markdown, save as SVG in `/content/assets/` and embed with:
 
 ```markdown
-![Architecture diagram description](../assets/ai-platform-arch.svg)
+![Architecture diagram description](assets/ai-platform-arch.svg)
 ```
 
 Always include descriptive `alt` text for all images — this is required for accessibility and for readers using the raw Markdown.
