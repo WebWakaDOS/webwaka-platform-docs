@@ -3,7 +3,7 @@
   "info": {
     "title": "WebWaka OS v4 Platform API",
     "version": "4.0.0",
-    "description": "The WebWaka OS v4 Open API — a vendor-neutral, offline-first, Africa-native SaaS Operating System. All endpoints support multi-tenancy and JWT-based RBAC.\n\n**Base URL:** `https://api.webwaka.io/v4`\n\n**Auth:** Bearer JWT (issued by `/auth/token`).",
+    "description": "The WebWaka OS v4 Open API \u2014 a vendor-neutral, offline-first, Africa-native SaaS Operating System. All endpoints support multi-tenancy and JWT-based RBAC.\n\n**Base URL:** `https://api.webwaka.io/v4`\n\n**Auth:** Bearer JWT (issued by `/auth/token`).",
     "contact": {
       "name": "WebWaka Platform Team",
       "url": "https://docs.webwaka.io",
@@ -15,24 +15,59 @@
     }
   },
   "servers": [
-    { "url": "https://api.webwaka.io/v4", "description": "Production" },
-    { "url": "https://staging-api.webwaka.io/v4", "description": "Staging" },
-    { "url": "http://localhost:8000/v4", "description": "Local Development" }
+    {
+      "url": "https://api.webwaka.io/v4",
+      "description": "Production"
+    },
+    {
+      "url": "https://staging-api.webwaka.io/v4",
+      "description": "Staging"
+    },
+    {
+      "url": "https://localhost:8000/v4",
+      "description": "Local Development (TLS)"
+    }
   ],
   "tags": [
-    { "name": "Auth", "description": "Authentication & token management" },
-    { "name": "Tenants", "description": "Multi-tenant management" },
-    { "name": "Commerce", "description": "Retail, POS, and marketplace" },
-    { "name": "Transport", "description": "Fleet, booking, and mobility" },
-    { "name": "Fintech", "description": "Payments, wallets, and settlements" },
-    { "name": "AI", "description": "CORE-5 vendor-neutral AI completions" },
-    { "name": "Webhooks", "description": "Webhook subscription management" },
-    { "name": "Events", "description": "Platform event bus" }
+    {
+      "name": "Auth",
+      "description": "Authentication & token management"
+    },
+    {
+      "name": "Tenants",
+      "description": "Multi-tenant management"
+    },
+    {
+      "name": "Commerce",
+      "description": "Retail, POS, and marketplace"
+    },
+    {
+      "name": "Transport",
+      "description": "Fleet, booking, and mobility"
+    },
+    {
+      "name": "Fintech",
+      "description": "Payments, wallets, and settlements"
+    },
+    {
+      "name": "AI",
+      "description": "CORE-5 vendor-neutral AI completions"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Webhook subscription management"
+    },
+    {
+      "name": "Events",
+      "description": "Platform event bus"
+    }
   ],
   "paths": {
     "/auth/token": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Issue access token",
         "description": "Exchange credentials for a signed JWT access token and refresh token.",
         "operationId": "authToken",
@@ -40,207 +75,1781 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/AuthRequest" },
-              "example": { "email": "admin@acme.ng", "password": "secret", "tenantSlug": "acme-retail" }
+              "schema": {
+                "$ref": "#/components/schemas/AuthRequest"
+              },
+              "example": {
+                "email": "admin@acme.ng",
+                "password": "secret",
+                "tenantSlug": "acme-retail"
+              }
             }
           }
         },
         "responses": {
           "200": {
             "description": "Token issued",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenResponse" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
-        }
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid credentials",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "None": []
+          }
+        ]
       }
     },
     "/auth/refresh": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Refresh access token",
         "operationId": "authRefresh",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "type": "object", "properties": { "refreshToken": { "type": "string" } }, "required": ["refreshToken"] }
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "format": "password"
+                  }
+                },
+                "required": [
+                  "refreshToken"
+                ]
+              }
             }
           }
         },
         "responses": {
-          "200": { "description": "New token issued", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenResponse" } } } },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
-        }
+          "200": {
+            "description": "New token issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid credentials",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "None": []
+          }
+        ]
       }
     },
     "/tenants": {
       "get": {
-        "tags": ["Tenants"],
+        "tags": [
+          "Tenants"
+        ],
         "summary": "List all tenants",
         "operationId": "listTenants",
-        "security": [{ "BearerAuth": [] }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "parameters": [
-          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
-          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } },
-          { "name": "vertical", "in": "query", "schema": { "type": "string", "enum": ["retail", "transport", "logistics", "fintech", "health"] } }
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "format": "int32",
+              "minimum": 0,
+              "maximum": 2147483647
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "format": "int32",
+              "minimum": 0,
+              "maximum": 2147483647
+            }
+          },
+          {
+            "name": "vertical",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "retail",
+                "transport",
+                "logistics",
+                "fintech",
+                "health"
+              ]
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Paginated tenant list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantList" } } } },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" }
+          "200": {
+            "description": "Paginated tenant list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantList"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid credentials",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       },
       "post": {
-        "tags": ["Tenants"],
+        "tags": [
+          "Tenants"
+        ],
         "summary": "Create a new tenant",
         "operationId": "createTenant",
-        "security": [{ "BearerAuth": [] }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantCreate" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TenantCreate"
+              }
+            }
+          }
         },
         "responses": {
-          "201": { "description": "Tenant created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Tenant" } } } },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "201": {
+            "description": "Tenant created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tenant"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid credentials",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/tenants/{tenantId}": {
       "get": {
-        "tags": ["Tenants"],
+        "tags": [
+          "Tenants"
+        ],
         "summary": "Get tenant by ID",
         "operationId": "getTenant",
-        "security": [{ "BearerAuth": [] }],
-        "parameters": [{ "name": "tenantId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "maxLength": 36
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "Tenant details", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Tenant" } } } },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "200": {
+            "description": "Tenant details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tenant"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       },
       "patch": {
-        "tags": ["Tenants"],
+        "tags": [
+          "Tenants"
+        ],
         "summary": "Update tenant",
         "operationId": "updateTenant",
-        "security": [{ "BearerAuth": [] }],
-        "parameters": [{ "name": "tenantId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "maxLength": 36
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TenantUpdate" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TenantUpdate"
+              }
+            }
+          }
         },
         "responses": {
-          "200": { "description": "Tenant updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Tenant" } } } },
-          "404": { "$ref": "#/components/responses/NotFound" }
+          "200": {
+            "description": "Tenant updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tenant"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/commerce/products": {
       "get": {
-        "tags": ["Commerce"],
+        "tags": [
+          "Commerce"
+        ],
         "summary": "List products",
         "operationId": "listProducts",
-        "security": [{ "BearerAuth": [] }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "parameters": [
-          { "name": "tenantId", "in": "query", "required": true, "schema": { "type": "string" } },
-          { "name": "category", "in": "query", "schema": { "type": "string" } },
-          { "name": "inStock", "in": "query", "schema": { "type": "boolean" } },
-          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
-          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 50 } }
+          {
+            "name": "tenantId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "pattern": "^[\\s\\S]{0,1000}$"
+            }
+          },
+          {
+            "name": "inStock",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "format": "int32",
+              "minimum": 0,
+              "maximum": 2147483647
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "format": "int32",
+              "minimum": 0,
+              "maximum": 2147483647
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Product list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProductList" } } } }
+          "200": {
+            "description": "Product list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductList"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       },
       "post": {
-        "tags": ["Commerce"],
+        "tags": [
+          "Commerce"
+        ],
         "summary": "Create product",
         "operationId": "createProduct",
-        "security": [{ "BearerAuth": [] }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProductCreate" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreate"
+              }
+            }
+          }
         },
         "responses": {
-          "201": { "description": "Product created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Product" } } } }
+          "201": {
+            "description": "Product created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/commerce/orders": {
       "post": {
-        "tags": ["Commerce"],
+        "tags": [
+          "Commerce"
+        ],
         "summary": "Create order",
         "operationId": "createOrder",
-        "security": [{ "BearerAuth": [] }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderCreate" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCreate"
+              }
+            }
+          }
         },
         "responses": {
-          "201": { "description": "Order created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Order" } } } }
+          "201": {
+            "description": "Order created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/fintech/wallets": {
       "get": {
-        "tags": ["Fintech"],
+        "tags": [
+          "Fintech"
+        ],
         "summary": "Get wallet balance",
         "operationId": "getWallet",
-        "security": [{ "BearerAuth": [] }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "parameters": [
-          { "name": "tenantId", "in": "query", "required": true, "schema": { "type": "string" } },
-          { "name": "currency", "in": "query", "schema": { "type": "string", "enum": ["NGN", "GHS", "KES", "ZAR", "USD"], "default": "NGN" } }
+          {
+            "name": "tenantId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NGN",
+                "GHS",
+                "KES",
+                "ZAR",
+                "USD"
+              ],
+              "default": "NGN"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Wallet balance", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Wallet" } } } }
+          "200": {
+            "description": "Wallet balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wallet"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/fintech/transfers": {
       "post": {
-        "tags": ["Fintech"],
+        "tags": [
+          "Fintech"
+        ],
         "summary": "Initiate transfer",
         "operationId": "initiateTransfer",
-        "security": [{ "BearerAuth": [] }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TransferRequest" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            }
+          }
         },
         "responses": {
-          "202": { "description": "Transfer initiated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Transfer" } } } },
-          "422": { "$ref": "#/components/responses/UnprocessableEntity" }
+          "202": {
+            "description": "Transfer initiated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transfer"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/transport/trips": {
       "get": {
-        "tags": ["Transport"],
+        "tags": [
+          "Transport"
+        ],
         "summary": "List trips",
         "operationId": "listTrips",
-        "security": [{ "BearerAuth": [] }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "parameters": [
-          { "name": "tenantId", "in": "query", "required": true, "schema": { "type": "string" } },
-          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["scheduled", "in_transit", "completed", "cancelled"] } }
+          {
+            "name": "tenantId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "scheduled",
+                "in_transit",
+                "completed",
+                "cancelled"
+              ]
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Trip list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TripList" } } } }
+          "200": {
+            "description": "Trip list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TripList"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/ai/completions": {
       "post": {
-        "tags": ["AI"],
+        "tags": [
+          "AI"
+        ],
         "summary": "CORE-5 AI completion",
-        "description": "Vendor-neutral AI text completion via CORE-5 abstraction layer. Routes to the best available model (OpenRouter → Llama-3 local fallback).",
+        "description": "Vendor-neutral AI text completion via CORE-5 abstraction layer. Routes to the best available model (OpenRouter \u2192 Llama-3 local fallback).",
         "operationId": "aiCompletion",
-        "security": [{ "BearerAuth": [] }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/AICompletionRequest" },
+              "schema": {
+                "$ref": "#/components/schemas/AICompletionRequest"
+              },
               "example": {
                 "prompt": "Summarise this invoice in Yoruba",
-                "context": { "invoiceId": "INV-001" },
+                "context": {
+                  "invoiceId": "INV-001"
+                },
                 "language": "yo",
                 "maxTokens": 256
               }
@@ -248,287 +1857,1386 @@
           }
         },
         "responses": {
-          "200": { "description": "Completion result", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AICompletionResponse" } } } }
+          "200": {
+            "description": "Completion result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AICompletionResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/webhooks": {
       "get": {
-        "tags": ["Webhooks"],
+        "tags": [
+          "Webhooks"
+        ],
         "summary": "List webhook subscriptions",
         "operationId": "listWebhooks",
-        "security": [{ "BearerAuth": [] }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "responses": {
-          "200": { "description": "Webhook list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookList" } } } }
+          "200": {
+            "description": "Webhook list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookList"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       },
       "post": {
-        "tags": ["Webhooks"],
+        "tags": [
+          "Webhooks"
+        ],
         "summary": "Create webhook subscription",
         "operationId": "createWebhook",
-        "security": [{ "BearerAuth": [] }],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/WebhookCreate" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookCreate"
+              }
+            }
+          }
         },
         "responses": {
-          "201": { "description": "Webhook created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Webhook" } } } }
+          "201": {
+            "description": "Webhook created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Webhook"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request \u2014 invalid parameters or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized \u2014 missing or invalid JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests \u2014 rate limit exceeded",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateLimitError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
         }
       }
     }
   },
   "components": {
     "securitySchemes": {
-      "BearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Tenant JWT issued by webwaka-core auth middleware. Tokens comply with RFC8725 (JSON Web Token Best Current Practices): short-lived (15m access / 7d refresh), signed with RS256, audience-restricted to the issuing tenant slug, and rotated on every refresh."
+      },
+      "TenantKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Tenant-Key",
+        "description": "Tenant API key for server-to-server calls"
+      },
+      "PublicEndpoint": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "No authentication required. This endpoint is intentionally public (token issuance)."
+      },
+      "None": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-No-Auth-Required",
+        "description": "Marker scheme for intentionally public endpoints (e.g. auth/token, auth/refresh). No key required."
+      }
     },
     "schemas": {
       "AuthRequest": {
         "type": "object",
-        "required": ["email", "password", "tenantSlug"],
+        "required": [
+          "email",
+          "password",
+          "tenantSlug"
+        ],
         "properties": {
-          "email": { "type": "string", "format": "email" },
-          "password": { "type": "string", "format": "password" },
-          "tenantSlug": { "type": "string", "example": "acme-retail" }
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "maxLength": 128
+          },
+          "tenantSlug": {
+            "type": "string",
+            "example": "acme-retail",
+            "maxLength": 1000,
+            "pattern": "^[a-z0-9][a-z0-9\\-]{0,62}[a-z0-9]$"
+          }
         }
       },
       "TokenResponse": {
         "type": "object",
         "properties": {
-          "accessToken": { "type": "string" },
-          "refreshToken": { "type": "string" },
-          "expiresIn": { "type": "integer", "example": 3600 },
-          "tokenType": { "type": "string", "example": "Bearer" }
+          "accessToken": {
+            "type": "string",
+            "maxLength": 1000,
+            "format": "password"
+          },
+          "refreshToken": {
+            "type": "string",
+            "maxLength": 1000,
+            "format": "password"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "example": 3600,
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "tokenType": {
+            "type": "string",
+            "example": "Bearer",
+            "maxLength": 1000,
+            "format": "password"
+          }
         }
       },
       "Tenant": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "slug": { "type": "string" },
-          "name": { "type": "string" },
-          "vertical": { "type": "string", "enum": ["retail", "transport", "logistics", "fintech", "health"] },
-          "currency": { "type": "string", "enum": ["NGN", "GHS", "KES", "ZAR", "USD"] },
-          "locale": { "type": "string", "example": "en-NG" },
-          "timezone": { "type": "string", "example": "Africa/Lagos" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "status": { "type": "string", "enum": ["active", "suspended", "trial"] }
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "maxLength": 36
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[a-z0-9][a-z0-9\\-]{0,62}[a-z0-9]$"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "vertical": {
+            "type": "string",
+            "enum": [
+              "retail",
+              "transport",
+              "logistics",
+              "fintech",
+              "health"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "NGN",
+              "GHS",
+              "KES",
+              "ZAR",
+              "USD"
+            ]
+          },
+          "locale": {
+            "type": "string",
+            "example": "en-NG",
+            "maxLength": 1000,
+            "pattern": "^[a-z]{2,3}(-[A-Z]{2,3})?$"
+          },
+          "timezone": {
+            "type": "string",
+            "example": "Africa/Lagos",
+            "maxLength": 1000,
+            "format": "time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "maxLength": 30
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "suspended",
+              "trial"
+            ]
+          }
         }
       },
       "TenantCreate": {
         "type": "object",
-        "required": ["name", "slug", "vertical"],
+        "required": [
+          "name",
+          "slug",
+          "vertical"
+        ],
         "properties": {
-          "name": { "type": "string" },
-          "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
-          "vertical": { "type": "string", "enum": ["retail", "transport", "logistics", "fintech", "health"] },
-          "currency": { "type": "string", "default": "NGN" },
-          "locale": { "type": "string", "default": "en-NG" }
+          "name": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "maxLength": 1000
+          },
+          "vertical": {
+            "type": "string",
+            "enum": [
+              "retail",
+              "transport",
+              "logistics",
+              "fintech",
+              "health"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "default": "NGN",
+            "maxLength": 1000,
+            "pattern": "^[A-Z]{3}$"
+          },
+          "locale": {
+            "type": "string",
+            "default": "en-NG",
+            "maxLength": 1000,
+            "pattern": "^[a-z]{2,3}(-[A-Z]{2,3})?$"
+          }
         }
       },
       "TenantUpdate": {
         "type": "object",
         "properties": {
-          "name": { "type": "string" },
-          "status": { "type": "string", "enum": ["active", "suspended"] }
+          "name": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "suspended"
+            ]
+          }
         }
       },
       "TenantList": {
         "type": "object",
         "properties": {
-          "data": { "type": "array", "items": { "$ref": "#/components/schemas/Tenant" } },
-          "total": { "type": "integer" },
-          "page": { "type": "integer" },
-          "limit": { "type": "integer" }
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tenant"
+            },
+            "maxItems": 100
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
         }
       },
       "Product": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "sku": { "type": "string" },
-          "name": { "type": "string" },
-          "price": { "type": "integer", "description": "Price in kobo (NGN), pesewas (GHS), or cents (KES)" },
-          "currency": { "type": "string" },
-          "stock": { "type": "integer" },
-          "category": { "type": "string" },
-          "tenantId": { "type": "string", "format": "uuid" },
-          "isAvailableOffline": { "type": "boolean", "default": true }
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "maxLength": 36
+          },
+          "sku": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "price": {
+            "type": "integer",
+            "description": "Price in kobo (NGN), pesewas (GHS), or cents (KES)",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[A-Z]{3}$"
+          },
+          "stock": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "tenantId": {
+            "type": "string",
+            "format": "uuid",
+            "maxLength": 36
+          },
+          "isAvailableOffline": {
+            "type": "boolean",
+            "default": true
+          }
         }
       },
       "ProductCreate": {
         "type": "object",
-        "required": ["name", "price", "tenantId"],
+        "required": [
+          "name",
+          "price",
+          "tenantId"
+        ],
         "properties": {
-          "name": { "type": "string" },
-          "sku": { "type": "string" },
-          "price": { "type": "integer" },
-          "currency": { "type": "string", "default": "NGN" },
-          "stock": { "type": "integer", "default": 0 },
-          "category": { "type": "string" },
-          "tenantId": { "type": "string", "format": "uuid" }
+          "name": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "sku": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "price": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "currency": {
+            "type": "string",
+            "default": "NGN",
+            "maxLength": 1000,
+            "pattern": "^[A-Z]{3}$"
+          },
+          "stock": {
+            "type": "integer",
+            "default": 0,
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "tenantId": {
+            "type": "string",
+            "format": "uuid",
+            "maxLength": 36
+          }
         }
       },
       "ProductList": {
         "type": "object",
         "properties": {
-          "data": { "type": "array", "items": { "$ref": "#/components/schemas/Product" } },
-          "total": { "type": "integer" }
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            },
+            "maxItems": 500
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
         }
       },
       "OrderCreate": {
         "type": "object",
-        "required": ["tenantId", "items"],
+        "required": [
+          "tenantId",
+          "items"
+        ],
         "properties": {
-          "tenantId": { "type": "string", "format": "uuid" },
-          "customerId": { "type": "string" },
+          "tenantId": {
+            "type": "string",
+            "format": "uuid",
+            "maxLength": 36
+          },
+          "customerId": {
+            "type": "string",
+            "maxLength": 1000,
+            "format": "uuid"
+          },
           "items": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "productId": { "type": "string" },
-                "quantity": { "type": "integer" },
-                "unitPrice": { "type": "integer" }
+                "productId": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "format": "uuid"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "format": "int32",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                "unitPrice": {
+                  "type": "integer",
+                  "format": "int32",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                }
               }
-            }
+            },
+            "maxItems": 500
           },
-          "paymentMethod": { "type": "string", "enum": ["paystack", "flutterwave", "wallet", "cash", "bank_transfer"] }
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "paystack",
+              "flutterwave",
+              "wallet",
+              "cash",
+              "bank_transfer"
+            ]
+          }
         }
       },
       "Order": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "reference": { "type": "string" },
-          "status": { "type": "string", "enum": ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"] },
-          "total": { "type": "integer" },
-          "currency": { "type": "string" },
-          "createdAt": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "maxLength": 36
+          },
+          "reference": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "confirmed",
+              "processing",
+              "shipped",
+              "delivered",
+              "cancelled"
+            ]
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[A-Z]{3}$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "maxLength": 30
+          }
         }
       },
       "Wallet": {
         "type": "object",
         "properties": {
-          "id": { "type": "string" },
-          "tenantId": { "type": "string" },
-          "balance": { "type": "integer" },
-          "availableBalance": { "type": "integer" },
-          "currency": { "type": "string" },
-          "ledger": { "type": "array", "items": { "type": "object" } }
+          "id": {
+            "type": "string",
+            "maxLength": 1000,
+            "format": "uuid"
+          },
+          "tenantId": {
+            "type": "string",
+            "maxLength": 1000,
+            "format": "uuid"
+          },
+          "balance": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "availableBalance": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[A-Z]{3}$"
+          },
+          "ledger": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "maxItems": 1000
+          }
         }
       },
       "TransferRequest": {
         "type": "object",
-        "required": ["amount", "currency", "destination"],
+        "required": [
+          "amount",
+          "currency",
+          "destination"
+        ],
         "properties": {
-          "amount": { "type": "integer" },
-          "currency": { "type": "string" },
+          "amount": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[A-Z]{3}$"
+          },
           "destination": {
             "type": "object",
             "properties": {
-              "accountNumber": { "type": "string" },
-              "bankCode": { "type": "string" },
-              "accountName": { "type": "string" }
+              "accountNumber": {
+                "type": "string",
+                "maxLength": 1000,
+                "pattern": "^[\\s\\S]{0,1000}$"
+              },
+              "bankCode": {
+                "type": "string",
+                "maxLength": 1000,
+                "pattern": "^[A-Z0-9_\\-]{1,32}$"
+              },
+              "accountName": {
+                "type": "string",
+                "maxLength": 1000,
+                "pattern": "^[\\s\\S]{0,1000}$"
+              }
             }
           },
-          "narration": { "type": "string" },
-          "idempotencyKey": { "type": "string" }
+          "narration": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "maxLength": 1000,
+            "format": "password"
+          }
         }
       },
       "Transfer": {
         "type": "object",
         "properties": {
-          "id": { "type": "string" },
-          "reference": { "type": "string" },
-          "status": { "type": "string", "enum": ["pending", "processing", "success", "failed"] },
-          "amount": { "type": "integer" },
-          "currency": { "type": "string" }
+          "id": {
+            "type": "string",
+            "maxLength": 1000,
+            "format": "uuid"
+          },
+          "reference": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "success",
+              "failed"
+            ]
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[A-Z]{3}$"
+          }
         }
       },
       "TripList": {
         "type": "object",
         "properties": {
-          "data": { "type": "array", "items": { "type": "object" } },
-          "total": { "type": "integer" }
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "maxItems": 100
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
         }
       },
       "AICompletionRequest": {
         "type": "object",
-        "required": ["prompt"],
+        "required": [
+          "prompt"
+        ],
         "properties": {
-          "prompt": { "type": "string" },
-          "context": { "type": "object" },
-          "language": { "type": "string", "enum": ["en", "yo", "ig", "ha", "fr", "sw", "ar"], "default": "en" },
-          "maxTokens": { "type": "integer", "default": 512 },
-          "temperature": { "type": "number", "minimum": 0, "maximum": 2, "default": 0.7 }
+          "prompt": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "context": {
+            "type": "object"
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "yo",
+              "ig",
+              "ha",
+              "fr",
+              "sw",
+              "ar"
+            ],
+            "default": "en"
+          },
+          "maxTokens": {
+            "type": "integer",
+            "default": 512,
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2,
+            "default": 0.7
+          }
         }
       },
       "AICompletionResponse": {
         "type": "object",
         "properties": {
-          "text": { "type": "string" },
-          "model": { "type": "string", "example": "openrouter/mistral-7b" },
-          "promptTokens": { "type": "integer" },
-          "completionTokens": { "type": "integer" },
-          "provider": { "type": "string", "enum": ["openrouter", "llama-local"] }
+          "text": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "model": {
+            "type": "string",
+            "example": "openrouter/mistral-7b",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "promptTokens": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "completionTokens": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "openrouter",
+              "llama-local"
+            ]
+          }
         }
       },
       "Webhook": {
         "type": "object",
         "properties": {
-          "id": { "type": "string" },
-          "url": { "type": "string", "format": "uri" },
-          "events": { "type": "array", "items": { "type": "string" } },
-          "secret": { "type": "string" },
-          "isActive": { "type": "boolean" },
-          "createdAt": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "string",
+            "maxLength": 1000,
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 1000,
+              "pattern": "^[\\s\\S]{0,1000}$"
+            },
+            "maxItems": 50
+          },
+          "secret": {
+            "type": "string",
+            "maxLength": 1000,
+            "format": "password"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "maxLength": 30
+          }
         }
       },
       "WebhookCreate": {
         "type": "object",
-        "required": ["url", "events"],
+        "required": [
+          "url",
+          "events"
+        ],
         "properties": {
-          "url": { "type": "string", "format": "uri" },
-          "events": { "type": "array", "items": { "type": "string" } }
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 1000,
+              "pattern": "^[\\s\\S]{0,1000}$"
+            },
+            "maxItems": 50
+          }
         }
       },
       "WebhookList": {
         "type": "object",
         "properties": {
-          "data": { "type": "array", "items": { "$ref": "#/components/schemas/Webhook" } },
-          "total": { "type": "integer" }
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Webhook"
+            },
+            "maxItems": 100
+          },
+          "total": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
         }
       },
       "Error": {
         "type": "object",
         "properties": {
-          "code": { "type": "string" },
-          "message": { "type": "string" },
-          "details": { "type": "object" }
+          "code": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[A-Z0-9_\\-]{1,32}$"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "details": {
+            "type": "object"
+          }
         }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[A-Z0-9_\\-]{1,32}$"
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 500,
+              "pattern": "^[\\s\\S]{0,500}$"
+            }
+          }
+        },
+        "required": [
+          "error",
+          "message"
+        ]
+      },
+      "RateLimitError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "rate_limit_exceeded",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 1000,
+            "pattern": "^[\\s\\S]{0,1000}$"
+          },
+          "retry_after": {
+            "type": "integer",
+            "description": "Seconds until rate limit resets",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 86400
+          }
+        },
+        "required": [
+          "error",
+          "message"
+        ]
       }
     },
     "responses": {
       "Unauthorized": {
-        "description": "Unauthorized — invalid or missing JWT",
-        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "code": "WW_AUTH_001", "message": "Token is invalid or expired" } } }
+        "description": "Unauthorized \u2014 invalid or missing JWT",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "code": "WW_AUTH_001",
+              "message": "Token is invalid or expired"
+            }
+          }
+        },
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          },
+          "Retry-After": {
+            "$ref": "#/components/headers/Retry-After"
+          }
+        }
       },
       "Forbidden": {
-        "description": "Forbidden — insufficient permissions",
-        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "code": "WW_AUTH_003", "message": "Insufficient role permissions" } } }
+        "description": "Forbidden \u2014 insufficient permissions",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "code": "WW_AUTH_003",
+              "message": "Insufficient role permissions"
+            }
+          }
+        },
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          },
+          "Retry-After": {
+            "$ref": "#/components/headers/Retry-After"
+          }
+        }
       },
       "NotFound": {
         "description": "Resource not found",
-        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "code": "WW_404", "message": "Resource not found" } } }
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "code": "WW_404",
+              "message": "Resource not found"
+            }
+          }
+        },
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          },
+          "Retry-After": {
+            "$ref": "#/components/headers/Retry-After"
+          }
+        }
       },
       "BadRequest": {
         "description": "Validation error",
-        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "code": "WW_VAL_001", "message": "Validation failed", "details": { "field": "slug", "error": "Must be lowercase alphanumeric with hyphens" } } } }
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "code": "WW_VAL_001",
+              "message": "Validation failed",
+              "details": {
+                "field": "slug",
+                "error": "Must be lowercase alphanumeric with hyphens"
+              }
+            }
+          }
+        },
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          },
+          "Retry-After": {
+            "$ref": "#/components/headers/Retry-After"
+          }
+        }
       },
       "UnprocessableEntity": {
         "description": "Business rule violation",
-        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "code": "WW_FIN_002", "message": "Insufficient wallet balance" } } }
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "code": "WW_FIN_002",
+              "message": "Insufficient wallet balance"
+            }
+          }
+        },
+        "headers": {
+          "X-RateLimit-Limit": {
+            "$ref": "#/components/headers/X-RateLimit-Limit"
+          },
+          "X-RateLimit-Remaining": {
+            "$ref": "#/components/headers/X-RateLimit-Remaining"
+          },
+          "X-RateLimit-Reset": {
+            "$ref": "#/components/headers/X-RateLimit-Reset"
+          },
+          "Retry-After": {
+            "$ref": "#/components/headers/Retry-After"
+          }
+        }
+      }
+    },
+    "headers": {
+      "X-RateLimit-Limit": {
+        "description": "Maximum requests allowed in the current window",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0,
+          "maximum": 10000
+        }
+      },
+      "X-RateLimit-Remaining": {
+        "description": "Remaining requests in the current window",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0,
+          "maximum": 10000
+        }
+      },
+      "X-RateLimit-Reset": {
+        "description": "UNIX timestamp when the current window resets",
+        "schema": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 0,
+          "maximum": 9999999999
+        }
+      },
+      "Retry-After": {
+        "description": "Seconds until you can retry the request",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0,
+          "maximum": 86400
+        }
       }
     }
-  }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    },
+    {
+      "TenantKey": []
+    }
+  ]
 }
