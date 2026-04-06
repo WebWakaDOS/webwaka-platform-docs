@@ -64,9 +64,14 @@ jobs:
     name: Generate Postman Collection
     runs-on: ubuntu-latest
     needs: validate-openapi
+    # Grant write permission so the automated commit/push succeeds
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
@@ -98,7 +103,7 @@ jobs:
           git config user.name "webwaka-bot[bot]"
           git config user.email "bot@webwaka.io"
           git add postman-collection.json
-          git diff --staged --quiet || git commit -m "chore(docs): regenerate Postman collection [automated] [Part 8.1]"
+          git diff --staged --quiet || git commit -m "chore(docs): regenerate Postman collection [automated]"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -108,11 +113,13 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.inputs.regenerate == 'true' || github.event_name == 'schedule'
     needs: validate-openapi
+    permissions:
+      contents: write
     steps:
       - name: Checkout docs repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.WEBWAKA_BOT_TOKEN }}
+          token: ${{ secrets.WEBWAKA_BOT_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
@@ -121,7 +128,7 @@ jobs:
 
       - name: Clone all platform repos
         run: |
-          mkdir -p /tmp/repos
+          mkdir -p /tmp/repos /tmp/specs
           REPOS=(
             "webwaka-core"
             "webwaka-central-mgmt"
@@ -129,11 +136,16 @@ jobs:
             "webwaka-transport"
             "webwaka-cross-cutting"
           )
+          BOT_TOKEN="${{ secrets.WEBWAKA_BOT_TOKEN }}"
           for repo in "${REPOS[@]}"; do
             echo "Cloning $repo..."
-            git clone --depth=1 \
-              https://x-access-token:${{ secrets.WEBWAKA_BOT_TOKEN }}@github.com/webwaka-os/${repo}.git \
-              /tmp/repos/${repo} || echo "Warning: Could not clone ${repo}"
+            if [ -n "$BOT_TOKEN" ]; then
+              git clone --depth=1 \
+                "https://x-access-token:${BOT_TOKEN}@github.com/WebWakaDOS/${repo}.git" \
+                "/tmp/repos/${repo}" || echo "Warning: Could not clone ${repo} — skipping"
+            else
+              echo "Warning: WEBWAKA_BOT_TOKEN not set — skipping clone of ${repo}"
+            fi
           done
 
       - name: Generate OpenAPI specs from TypeScript interfaces
@@ -185,21 +197,26 @@ jobs:
           git config user.name "webwaka-bot[bot]"
           git config user.email "bot@webwaka.io"
           git add openapi.json
-          git diff --staged --quiet || git commit -m "chore(docs): regenerate OpenAPI spec from source repos [Part 8.1]"
+          git diff --staged --quiet || git commit -m "chore(docs): regenerate OpenAPI spec from source repos [automated]"
           git push
         env:
-          GITHUB_TOKEN: ${{ secrets.WEBWAKA_BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.WEBWAKA_BOT_TOKEN || secrets.GITHUB_TOKEN }}
 
   translate-docs:
     name: AI Translation Pipeline
     runs-on: ubuntu-latest
     needs: validate-openapi
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Grant write permission so translated files can be committed back
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.WEBWAKA_BOT_TOKEN }}
+          # WEBWAKA_BOT_TOKEN preferred (for cross-repo if needed); fallback to GITHUB_TOKEN
+          token: ${{ secrets.WEBWAKA_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+          fetch-depth: 2
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
@@ -221,21 +238,28 @@ jobs:
         if: steps.changed.outputs.files != ''
         env:
           WEBWAKA_AI_KEY: ${{ secrets.WEBWAKA_AI_KEY }}
+          CHANGED_FILES: ${{ steps.changed.outputs.files }}
         run: |
           node -e "
             const fs = require('fs');
             const https = require('https');
-            const files = process.env.CHANGED_FILES
-              ? process.env.CHANGED_FILES.split(',').filter(f => f.endsWith('.md'))
-              : [];
+            const files = (process.env.CHANGED_FILES || '')
+              .split(',').filter(f => f.trim().endsWith('.md'));
 
             const languages = ['fr', 'sw', 'ar'];
 
             async function translateFile(filepath, targetLang) {
+              filepath = filepath.trim();
+              if (!filepath || !fs.existsSync(filepath)) return;
               const content = fs.readFileSync(filepath, 'utf8');
               const targetPath = 'translations/' + targetLang + '/' + filepath.split('/').pop();
 
-              // Call CORE-5 AI translation (WebWaka AI platform)
+              const apiKey = process.env.WEBWAKA_AI_KEY;
+              if (!apiKey) {
+                console.log('WEBWAKA_AI_KEY not set — skipping translation for', filepath);
+                return;
+              }
+
               const payload = JSON.stringify({
                 prompt: 'Translate the following Markdown documentation to ' + targetLang +
                         '. Preserve all Markdown formatting, code blocks, and links. Only translate natural language text.',
@@ -251,7 +275,8 @@ jobs:
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + process.env.WEBWAKA_AI_KEY
+                    'Authorization': 'Bearer ' + apiKey,
+                    'Content-Length': Buffer.byteLength(payload)
                   }
                 }, (res) => {
                   let data = '';
@@ -264,13 +289,16 @@ jobs:
                       fs.mkdirSync('translations/' + targetLang, { recursive: true });
                       fs.writeFileSync(targetPath, header + translated);
                       console.log('Translated', filepath, '->', targetPath);
-                    } catch {
-                      console.log('Translation unavailable for', filepath, '- skipping');
+                    } catch (e) {
+                      console.log('Translation unavailable for', filepath, '- skipping:', e.message);
                     }
                     resolve();
                   });
                 });
-                req.on('error', () => resolve());
+                req.on('error', (e) => {
+                  console.log('Request error for', filepath, ':', e.message);
+                  resolve();
+                });
                 req.write(payload);
                 req.end();
               });
@@ -285,14 +313,14 @@ jobs:
                 }
               }
             })();
-          " || echo 'Translation pipeline ran (may be partial in staging)'
+          "
 
-      - name: Commit translations
+      - name: Commit translated files
         run: |
           git config user.name "webwaka-bot[bot]"
           git config user.email "bot@webwaka.io"
           git add translations/
-          git diff --staged --quiet || git commit -m "chore(i18n): auto-translate docs via CORE-5 [Part 12.3]"
+          git diff --staged --quiet || git commit -m "chore(i18n): auto-translate updated docs [automated]"
           git push
         env:
-          GITHUB_TOKEN: ${{ secrets.WEBWAKA_BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
