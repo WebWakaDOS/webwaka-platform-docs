@@ -23,7 +23,6 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.5.2",
     "@types/sanitize-html": "^2.16.1",
-    "broken-link-checker": "^0.7.8",
     "express": "^5.2.1",
     "front-matter": "^4.0.2",
     "helmet": "^8.1.0",
